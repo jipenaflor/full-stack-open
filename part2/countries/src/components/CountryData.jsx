@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 export const CountryData = ({country}) => {
     //console.log(Object.values(country.languages))
     const [weather, setWeather] = useState(null)
-    const api_key = "8852ab9aea5780be423e2eb3dbcdfa21"
+    const api_key = import.meta.env.VITE_WEATHER_KEY
 
     useEffect(() => {
         axios.get(`https://api.openweathermap.org/data/2.5/weather?q=${country.capital[0]}&appid=${api_key}`)
