@@ -1,6 +1,9 @@
 const express = require('express')
+const morgan = require('morgan')
 const app = express()
 
+// middleware functions used before routes since we want them to be executed
+// before the route handlers are called
 app.use(express.json())
 
 let persons = [
@@ -58,13 +61,28 @@ app.delete('/api/persons/:id', (request, response) => {
     response.status(204).end()
 })
 
+app.use(morgan(function (tokens, req, res) {
+    return [
+        tokens.method(req, res),
+        tokens.url(req, res),
+        tokens.status(req, res),
+        tokens.res(req, res, 'content-length'), '-',
+        tokens['response-time'](req, res), 'ms',
+        tokens['request-body'](req, res)
+    ].join(' ')
+}))
+
+morgan.token('request-body', (req, res) => {
+    return JSON.stringify(req.body)
+})
+
 // add a person
 const generateId = () => {
     return Math.floor(Math.random() * 1000)
 }
 app.post('/api/persons', (request, response) => {
     const body = request.body
-    
+
     if (!body.name && !body.number) {
         return response.status(400).json({
             error: 'the name or number is missing'
@@ -82,10 +100,19 @@ app.post('/api/persons', (request, response) => {
         number: body.number,
         id: generateId()
     }
-
+    
     persons = persons.concat(person)
     response.json(person)
 })
+
+// using middlewares after route if no route handles the http request
+/*
+const unknownEndpoint = (request, response) => {
+    response.status(404).send({ error: 'unknown endpoint' })
+  }
+  
+app.use(unknownEndpoint)
+*/
 
 const PORT = 3001
 app.listen(PORT, () => {
