@@ -1,10 +1,13 @@
 const express = require('express')
 const morgan = require('morgan')
+const cors = require('cors')
+
 const app = express()
 
 // middleware functions used before routes since we want them to be executed
 // before the route handlers are called
 app.use(express.json())
+app.use(cors())
 
 let persons = [
     { 
@@ -61,6 +64,8 @@ app.delete('/api/persons/:id', (request, response) => {
     response.status(204).end()
 })
 
+// middleware functions used before routes since we want them to be executed
+// before the route handlers are called
 app.use(morgan(function (tokens, req, res) {
     return [
         tokens.method(req, res),
