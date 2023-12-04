@@ -13,6 +13,7 @@ const Person = require('./models/person')
 // before the route handlers are called
 app.use(express.json())
 app.use(cors())
+app.use(express.static('dist'))
 
 /* //hardcoded objects
 let persons = [
