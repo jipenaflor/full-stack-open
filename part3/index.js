@@ -110,16 +110,17 @@ const generateId = () => {
 */
 
 // add a person
-app.post('/api/persons', (request, response) => {
+app.post('/api/persons', (request, response, next) => {
     const body = request.body
 
+    /*
     if (!body.name && !body.number) {
         return response.status(400).json({
             error: 'the name or number is missing'
         })
     }
 
-    /*
+    
     if (persons.find(person => person.name === body.name)) {
         return response.status(400).json({
             error: 'the name already exists in the phonebook'
@@ -139,6 +140,8 @@ app.post('/api/persons', (request, response) => {
     */
     person.save().then(savedPerson => {
         response.json(savedPerson)
+    }).catch(error => {
+        next(error)
     })
 })
 
@@ -176,9 +179,10 @@ app.use(unknownEndpoint)
 const errorHandler = (error, request, response, next) => {
     console.log(error.message)
     
-    if (error.name === 'CastError') {
+    if (error.name === 'CastError') {   // invalid object id
         return response.status(400).send({ error: 'malformatted id'})
-    }
+    } else if (error.name === 'ValidationError')    // invalid input
+        return response.status(400).json({ error: error.message})
 
     next(error)
 }
