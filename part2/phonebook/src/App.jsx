@@ -36,6 +36,8 @@ const App = () => {
             setPersons(persons.map(p => p.id !== toChange.id? p : returnedPerson))
             setNewName('')
             setNewNumber('')
+          }).catch(error => {
+            setErrorMessage({type: "error", content: error.response.data.error})
           })
       }
     } else {
