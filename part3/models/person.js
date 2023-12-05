@@ -7,7 +7,7 @@ const url = process.env.MONGODB_URI
 console.log('connecting to', url)
 
 mongoose.connect(url)
-    .then(result => {
+    .then(() => {
         console.log('connected to MongoDB')
     })
     .catch((error) => {
@@ -24,12 +24,12 @@ const personSchema = new mongoose.Schema({
         type: String,
         minLength: 8,
         validate: {
-            validator: function(v) {
-                return /^\d{2}-\d+$|^\d{3}-\d+$/.test(v);
-            }
+            validator: function( v ) {
+                return /^\d{2}-\d+$|^\d{3}-\d+$/.test(v)
+            },
         },
         required: true,
-    }
+    },
 })
 
 personSchema.set('toJSON', {
@@ -37,7 +37,7 @@ personSchema.set('toJSON', {
         returnedObject.id = returnedObject._id.toString()
         delete returnedObject._id
         delete returnedObject.__v
-    }
+    },
 })
 
 // public interface of the module
