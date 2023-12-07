@@ -20,7 +20,7 @@ mongoose.connect(config.MONGODB_URI)
     })
 
 app.use(cors())
-app.use(express.static('build'))
+app.use(express.static('dist'))
 app.use(express.json())
 
 // middleware functions used before routes since we want them to be executed
