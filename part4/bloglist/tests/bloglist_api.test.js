@@ -68,7 +68,7 @@ describe('bloglist_api test', () => {
         const newBlog = {
             title: 'Dependecy Injection Demystified',
             author: 'James Shore',
-            url: 'https://www.jamesshore.com/v2/blog/2006/dependency-injection-demystified',
+            url: 'https://www.jamesshore.com/v2/blog/2006/dependency-injection-demystified'
         }
 
         await api
@@ -100,6 +100,35 @@ describe('bloglist_api test', () => {
         
         const blogsInDb = await helper.blogsInDb()
         expect(blogsInDb).toHaveLength(helper.blogs.length)
+    })
+
+    test('a specific blog can be viewed through its id', async () => {
+        const blogsInDb = await helper.blogsInDb()
+        const blogToView = blogsInDb[0]
+        const resultBlog = await api
+            .get(`/api/blogs/${blogToView.id}`)
+            .expect(200)
+            .expect('Content-Type', /application\/json/)
+        
+        expect(resultBlog.body).toEqual(blogToView)
+    })
+
+    test('a blog can be deleted', async () => {
+        const blogsInDb = await helper.blogsInDb()
+        const blogToDelete = blogsInDb[0]
+
+        await api
+            .delete(`/api/blogs/${blogToDelete.id}`)
+            .expect(204)
+        
+        const remainingBlogs = await helper.blogsInDb()
+        expect(remainingBlogs).toHaveLength(
+            helper.blogs.length - 1
+        )
+        
+        const remainingTitles = remainingBlogs.map(r => r.title)
+        expect(remainingTitles).not.toContain(blogToDelete.title)
+
     })
 })
 
