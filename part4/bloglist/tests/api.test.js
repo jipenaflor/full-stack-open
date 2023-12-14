@@ -1,11 +1,14 @@
 const mongoose = require('mongoose')
+const bcrypt = require('bcrypt')
 const supertest = require('supertest')
 const helper = require('./helper')
 const app = require('../app')
 
 const api = supertest(app)
+jest.setTimeout(20000)
 
 const Blog = require('../models/blog')
+const User = require('../models/user')
 
 beforeEach(async () => {
     await Blog.deleteMany({})   // clear database
@@ -128,6 +131,50 @@ describe('bloglist_api test', () => {
         
         const remainingTitles = remainingBlogs.map(r => r.title)
         expect(remainingTitles).not.toContain(blogToDelete.title)
+    })
+})
+
+describe('user_api test', () => {
+    beforeEach(async () => {
+        await User.deleteMany({})
+
+        const passwordHash = await bcrypt.hash('hidden', 10)
+        const user = new User({
+            username: 'root',
+            name: 'root',
+            passwordHash
+        })
+
+        await user.save()
+    })
+
+    test('users are returned as json', async () => {
+        await api
+            .get('/api/users')
+            .expect(200)
+            .expect('Content-Type', /application\/json/)
+    })
+
+    test('create new users with post method', async () => {
+        const initialUsers = await helper.usersInDb()
+
+        const newUser = {
+            username: 'jipenaflor',
+            name: 'Jerome Penaflor',
+            password: 'secret'
+        }
+
+        await api
+            .post('/api/users')
+            .send(newUser)
+            .expect(201)
+            .expect('Content-Type', /application\/json/)
+
+        const usersInDB = await helper.usersInDb()
+        expect(usersInDB).toHaveLength(initialUsers.length + 1)
+
+        const usernames = usersInDB.map(u => u.username)
+        expect(usernames).toContain(newUser.username)
 
     })
 })
