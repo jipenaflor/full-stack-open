@@ -175,7 +175,53 @@ describe('user_api test', () => {
 
         const usernames = usersInDB.map(u => u.username)
         expect(usernames).toContain(newUser.username)
+    })
 
+    test('user with existing username is not added', async () => {
+        const initialUsers = await helper.usersInDb()
+
+        const newUser = {
+            username: 'root',
+            name: 'root',
+            password: 'secret'
+        }
+
+        await api
+            .post('/api/users')
+            .send(newUser)
+            .expect(400)
+
+        const usersInDB = await helper.usersInDb()
+        expect(usersInDB).toHaveLength(initialUsers.length)
+    })
+
+    test('user with invalid credentials is not added', async () => {
+        const initialUsers = await helper.usersInDb()
+
+        const invalidUsername = {
+            username: 'ji',
+            name: 'Jerome Penaflor',
+            password: 'secret'
+        }
+
+        const invalidPassword = {
+            username: 'jipenaflor',
+            name: 'Jerome Penaflor',
+            password: 'se'
+        }
+
+        await api
+            .post('/api/users')
+            .send(invalidUsername)
+            .expect(400)
+        
+        await api
+            .post('/api/users')
+            .send(invalidPassword)
+            .expect(400)
+        
+        const usersInDB = await helper.usersInDb()
+        expect(usersInDB).toHaveLength(initialUsers.length)
     })
 })
 
