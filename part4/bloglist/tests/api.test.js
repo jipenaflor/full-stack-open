@@ -225,6 +225,46 @@ describe('user_api test', () => {
     })
 })
 
+describe('login_api test', () => {
+    beforeEach(async () => {
+        await User.deleteMany({})
+
+        const passwordHash = await bcrypt.hash('hidden', 10)
+        const user = new User({
+            username: 'root',
+            name: 'root',
+            passwordHash
+        })
+
+        await user.save()
+    })
+
+    test('authorized user gets a token', async () => {
+        const user = {
+            username: 'root',
+            password: 'hidden'
+        }
+
+        await api
+            .post('/api/login')
+            .send(user)
+            .expect(200)
+            .expect('Content-Type', /application\/json/)
+    })
+
+    test('unauthorized user gets an error', async () => {
+        const user = {
+            username: 'admin',
+            password: 'hidden'
+        }
+
+        await api
+            .post('/api/login')
+            .send(user)
+            .expect(401)
+    })
+})
+
 afterAll(async () => {
     await mongoose.connection.close()
 })
