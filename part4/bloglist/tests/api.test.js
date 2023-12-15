@@ -1,5 +1,7 @@
+require('dotenv').config()
 const mongoose = require('mongoose')
 const bcrypt = require('bcrypt')
+const jwt = require('jsonwebtoken')
 const supertest = require('supertest')
 const helper = require('./helper')
 const app = require('../app')
@@ -10,15 +12,15 @@ jest.setTimeout(20000)
 const Blog = require('../models/blog')
 const User = require('../models/user')
 
-beforeEach(async () => {
-    await Blog.deleteMany({})   // clear database
-    
-    const blogObjects = helper.blogs.map(blog => new Blog(blog))
-    const promiseArray = blogObjects.map(blog => blog.save())
-    await Promise.all(promiseArray)
-})
-
 describe('bloglist_api test', () => {
+    beforeEach(async () => {
+        await Blog.deleteMany({})   // clear database
+        
+        const blogObjects = helper.blogs.map(blog => new Blog(blog))
+        const promiseArray = blogObjects.map(blog => blog.save())
+        await Promise.all(promiseArray)
+    })
+
     test('blogs are returned as json', async () => {
         await api
             .get('/api/blogs')
@@ -228,6 +230,7 @@ describe('user_api test', () => {
 describe('login_api test', () => {
     beforeEach(async () => {
         await User.deleteMany({})
+        await Blog.deleteMany({})   // clear database
 
         const passwordHash = await bcrypt.hash('hidden', 10)
         const user = new User({
@@ -262,6 +265,70 @@ describe('login_api test', () => {
             .post('/api/login')
             .send(user)
             .expect(401)
+    })
+
+    test('user with authorized token can add a blog', async () => {
+        const user = {
+            username: 'root',
+            password: 'hidden'
+        }
+
+        const response = await api
+            .post('/api/login')
+            .send(user)
+        
+        const token = response.body.token
+
+        const newBlog = {
+            title: 'Dependecy Injection Demystified',
+            author: 'James Shore',
+            url: 'https://www.jamesshore.com/v2/blog/2006/dependency-injection-demystified',
+            likes: 6
+        }
+
+        await api
+            .post('/api/blogs')
+            .set('Authorization', `Bearer ${token}`)
+            .send(newBlog)
+            .expect(201)
+            .expect('Content-Type', /application\/json/)
+    })
+
+    test('only the user can delete its own blog', async () => {
+        const user = {
+            username: 'root',
+            password: 'hidden'
+        }
+
+        const response = await api
+            .post('/api/login')
+            .send(user)
+        
+        const token = response.body.token
+
+        const newBlog = {
+            title: 'Dependecy Injection Demystified',
+            author: 'James Shore',
+            url: 'https://www.jamesshore.com/v2/blog/2006/dependency-injection-demystified',
+            likes: 6
+        }
+
+        await api
+            .post('/api/blogs')
+            .set('Authorization', `Bearer ${token}`)
+            .send(newBlog)
+        
+        const blogsInDb = await helper.blogsInDb()
+        const blogToDelete = blogsInDb[0]
+        console.log(blogToDelete)
+
+        await api
+            .delete(`/api/blogs/${blogToDelete.id}`)
+            .set('Authorization', `Bearer ${token}`)
+            .expect(204)
+        
+        const remainingBlogs = await helper.blogsInDb()
+        expect(remainingBlogs).toHaveLength(0)
     })
 })
 

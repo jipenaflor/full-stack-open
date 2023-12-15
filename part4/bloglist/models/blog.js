@@ -1,7 +1,10 @@
 const mongoose = require('mongoose')
 
 const blogSchema = new mongoose.Schema({
-    title: String,
+    title: {
+        type: String,
+        required: true,
+    },
     author: {
         type: String,
         required: true,
