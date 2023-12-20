@@ -1,7 +1,6 @@
 const LoginForm = ({ username, password, handleUsername, handlePassword, handleLogin }) => {
     return (
         <div>
-            <h2>Log in to Application</h2>
             <form onSubmit={ handleLogin }>
                 <div>
                     username <input value={ username } onChange={ handleUsername }/>

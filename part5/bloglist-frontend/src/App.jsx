@@ -4,6 +4,7 @@ import blogService from './services/blogs'
 import loginService from './services/login'
 import LoginForm from './components/LoginForm'
 import BlogForm from './components/BlogForm'
+import Notification from './components/Notification'
 
 const App = () => {
   const [blogs, setBlogs] = useState([])
@@ -15,6 +16,8 @@ const App = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [user, setUser] = useState(null)
+
+  const [notification, setNotification] = useState(null)
 
   useEffect(() => {
     const loggedUserJSON = window.localStorage.getItem('loggedBloglistUser')
@@ -54,8 +57,11 @@ const App = () => {
       setUser(user)
       setUsername('')
       setPassword('')
-    } catch (exception) {
-      alert('Wrong credentials')
+    } catch (error) {
+      setNotification({
+        type: "error", content: 'invalid username or password'
+      })
+      setTimeout(() => {setNotification(null)}, 5000)
     }
   }
 
@@ -86,19 +92,29 @@ const App = () => {
       }
       
       blogService.setToken(user.token)
-      await blogService.create(blogObject)
-  
+      const newBlog = await blogService.create(blogObject)
+      setBlogs(blogs.concat(newBlog))
+      
+      setNotification({
+        type: "success", content: `a new blog ${title} by ${author} added`
+      })
+
       setTitle('')
       setAuthor('')
       setUrl('')
     } catch (error) {
-      alert('Invalid blog')
+      setNotification({
+        type: "error", content: "Invalid blog"
+      })
     }
+    setTimeout(() => {setNotification(null)}, 5000)
   }
  
   if (user == null) {
     return(
       <div>
+        <h2>Log in to Application</h2>
+        <Notification message={notification}/>
         <LoginForm username={ username } password={ password } handleUsername={ handleUsername }
           handlePassword={ handlePassword } handleLogin={ handleLogin }/>
       </div>
@@ -108,6 +124,7 @@ const App = () => {
   return (
     <div>
       <h2>blogs</h2>
+      <Notification message={notification}/>
       <div>
         { user.name } logged in
         <button onClick={ handleLogout }>logout</button>
