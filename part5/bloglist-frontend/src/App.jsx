@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useLayoutEffect } from 'react'
 import Blog from './components/Blog'
 import blogService from './services/blogs'
 import loginService from './services/login'
@@ -16,20 +16,20 @@ const App = () => {
 
   const [notification, setNotification] = useState(null)
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const loggedUserJSON = window.localStorage.getItem('loggedBloglistUser')
     if (loggedUserJSON) {
       const user = JSON.parse(loggedUserJSON)
       setUser(user)
       blogService.setToken(user.token)
+      getAllBlogs()
     }
   }, [])
 
-  useEffect(() => {
-    blogService.getAll().then(blogs =>
-      setBlogs( blogs )
-    )  
-  }, [])
+  const getAllBlogs = async () => {
+    const allBlogs = await blogService.getAll()
+    setBlogs(allBlogs)
+  }
 
   const handleUsername = (event) => {
     setUsername(event.target.value)
@@ -74,11 +74,11 @@ const App = () => {
     try {
       const newBlog = await blogService.create(blogObject)
       setBlogs(blogs.concat(newBlog))
-      /*
+      
       setNotification({
-        type: "success", content: `a new blog ${title} by ${author} added`
+        type: "success", content: `the new blog was added`
       })
-      */
+      
     } catch (error) {
       setNotification({
         type: "error", content: "Invalid blog"
@@ -93,6 +93,18 @@ const App = () => {
       <BlogForm createBlog={ addBlog }/>
       </Togglable>
     )
+  }
+
+  const updateBlog = async (blogObject) => {
+    try {
+      const updatedBlog = await blogService.update(blogObject)
+      setBlogs(blogs.map(blog => blog.id !== updatedBlog.id ? blog : updatedBlog))
+    } catch (error) {
+      setNotification({
+        type: "error", content: error.response.data.error
+      })
+      setTimeout(() => {setNotification(null)}, 5000)
+    }
   }
  
   if (user == null) {
@@ -118,7 +130,7 @@ const App = () => {
       {blogForm()}
 
       {blogs.map(blog =>
-        <Blog key={ blog.id } blog={ blog } />
+        <Blog key={ blog.id } blog={ blog } increaseLikes={ updateBlog } />
       )}
     </div>
   )

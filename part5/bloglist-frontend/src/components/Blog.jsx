@@ -1,6 +1,6 @@
 import { useState } from "react"
 
-const Blog = ({ blog }) => {
+const Blog = ({ blog, increaseLikes }) => {
   const blogStyle = {
     paddingTop: 10,
     paddingLeft: 2,
@@ -10,12 +10,23 @@ const Blog = ({ blog }) => {
   }
 
   const [view, setView] = useState(false)
+  const [blogObject, setBlogObject] = useState(blog)
 
   const hideWhenViewed = {display: view ? 'none' : ''}
   const showWhenViewed = {display: view ? '' : 'none'}
 
   const toggleView = () => {
     setView(!view)
+  }
+
+  const handleLikes = (event) => {
+    event.preventDefault()
+    const updatedBlog = ({
+      ...blog,
+      likes: blog.likes + 1
+    })
+    increaseLikes(updatedBlog)
+    setBlogObject(updatedBlog)
   }
 
   return (
@@ -26,15 +37,15 @@ const Blog = ({ blog }) => {
       </div>
       <div style={{...blogStyle, ...showWhenViewed}}>
         <div>
-          {blog.title} {blog.author}
+          {blog.title} by {blog.author} {' '}
           <button onClick={ toggleView }>hide</button>
         </div>
         <div>
           <a href={blog.url}>{blog.url}</a>
         </div>
         <div>
-          likes {blog.likes} {' '}
-          <button>like</button>
+          likes {blogObject.likes} {' '}
+          <button onClick={ handleLikes }>like</button>
         </div>
         <div>
           {blog.user.name}
