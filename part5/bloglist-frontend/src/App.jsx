@@ -76,7 +76,7 @@ const App = () => {
       setBlogs(blogs.concat(newBlog))
       
       setNotification({
-        type: "success", content: `the new blog was added`
+        type: "success", content: "The new blog was added"
       })
       
     } catch (error) {
@@ -106,6 +106,23 @@ const App = () => {
       setTimeout(() => {setNotification(null)}, 5000)
     }
   }
+
+  const deleteBlog = async (blogObject) => {
+    try {
+      if (window.confirm(`Remove blog ${blogObject.title} by ${blogObject.author}`)) {
+        await blogService.remove(blogObject)
+        setBlogs(blogs.filter(blog => blog.id !== blogObject.id))
+        setNotification({
+          type: "success", content: "The blog was successfully removed"
+        })
+      }
+    } catch (error) {
+      setNotification({
+        type: "error", content: "The blog has already been removed from the server"
+      })
+    }
+    setTimeout(() => {setNotification(null)}, 5000)
+  }
  
   if (user == null) {
     return(
@@ -129,8 +146,8 @@ const App = () => {
 
       {blogForm()}
 
-      {blogs.map(blog =>
-        <Blog key={ blog.id } blog={ blog } increaseLikes={ updateBlog } />
+      {blogs.sort((b1, b2) => b1.likes - b2.likes).map(blog =>
+        <Blog key={ blog.id } blog={ blog } increaseLikes={ updateBlog } removeBlog={ deleteBlog } />
       )}
     </div>
   )
