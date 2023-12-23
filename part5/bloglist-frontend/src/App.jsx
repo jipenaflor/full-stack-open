@@ -56,7 +56,7 @@ const App = () => {
       setPassword('')
     } catch (error) {
       setNotification({
-        type: "error", content: 'invalid username or password'
+        type: 'error', content: 'invalid username or password'
       })
       setTimeout(() => {setNotification(null)}, 5000)
     }
@@ -74,14 +74,12 @@ const App = () => {
     try {
       const newBlog = await blogService.create(blogObject)
       setBlogs(blogs.concat(newBlog))
-      
       setNotification({
-        type: "success", content: "The new blog was added"
+        type: 'success', content: 'The new blog was added'
       })
-      
     } catch (error) {
       setNotification({
-        type: "error", content: "Invalid blog"
+        type: 'error', content: 'Invalid blog'
       })
     }
     setTimeout(() => {setNotification(null)}, 5000)
@@ -90,7 +88,7 @@ const App = () => {
   const blogForm = () => {
     return (
       <Togglable buttonLabel="new blog" ref={ blogFormRef }>
-      <BlogForm createBlog={ addBlog }/>
+        <BlogForm createBlog={ addBlog }/>
       </Togglable>
     )
   }
@@ -101,7 +99,7 @@ const App = () => {
       setBlogs(blogs.map(blog => blog.id !== updatedBlog.id ? blog : updatedBlog))
     } catch (error) {
       setNotification({
-        type: "error", content: error.response.data.error
+        type: 'error', content: error.response.data.error
       })
       setTimeout(() => {setNotification(null)}, 5000)
     }
@@ -113,19 +111,19 @@ const App = () => {
         await blogService.remove(blogObject)
         setBlogs(blogs.filter(blog => blog.id !== blogObject.id))
         setNotification({
-          type: "success", content: "The blog was successfully removed"
+          type: 'success', content: 'The blog was successfully removed'
         })
       }
     } catch (error) {
       setNotification({
-        type: "error", content: "The blog has already been removed from the server"
+        type: 'error', content: 'The blog has already been removed from the server'
       })
     }
     setTimeout(() => {setNotification(null)}, 5000)
   }
- 
-  if (user == null) {
-    return(
+
+  if (user === null) {
+    return (
       <div>
         <h2>Log in to Application</h2>
         <Notification message={notification}/>

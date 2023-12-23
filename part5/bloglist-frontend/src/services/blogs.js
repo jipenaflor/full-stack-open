@@ -34,8 +34,8 @@ export const remove = objectToDelete => {
   return request.then(response => response.data)
 }
 
-export default { 
-  setToken, 
+export default {
+  setToken,
   getAll,
   create,
   update,
