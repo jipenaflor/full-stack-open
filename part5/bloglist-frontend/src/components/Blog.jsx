@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-const Blog = ({ blog, increaseLikes, removeBlog }) => {
+const Blog = ({ blog, increaseLikes, username, removeBlog }) => {
   const blogStyle = {
     paddingTop: 10,
     paddingLeft: 2,
@@ -32,29 +32,31 @@ const Blog = ({ blog, increaseLikes, removeBlog }) => {
   const handleRemove = () => removeBlog(blog)
 
   return (
-    <div>
+    <div className='blog'>
       <div style={{ ...blogStyle, ...hideWhenViewed }}>
         {blog.title} by {blog.author} {' '}
-        <button onClick={ toggleView }>view</button>
+        <button id='view' onClick={ toggleView }>view</button>
       </div>
       <div style={{ ...blogStyle, ...showWhenViewed }}>
-        <div>
+        <div id='titleAndAuthor'>
           {blog.title} by {blog.author} {' '}
-          <button onClick={ toggleView }>hide</button>
+          <button id='hide' onClick={ toggleView }>hide</button>
         </div>
-        <div>
+        <div id='url'>
           <a href={blog.url}>{blog.url}</a>
         </div>
-        <div>
+        <div id='likes'>
           likes {blogObject.likes} {' '}
-          <button onClick={ handleLikes }>like</button>
+          <button id='like' onClick={ handleLikes }>like</button>
         </div>
-        <div>
+        <div id='user_name'>
           {blog.user.name}
         </div>
-        <div>
-          <button onClick={ handleRemove }>remove</button>
-        </div>
+        {blog.user.username === username && 
+          <div>
+            <button id='remove' onClick={ handleRemove }>remove</button>
+          </div>
+        }
       </div>
     </div>
   )
