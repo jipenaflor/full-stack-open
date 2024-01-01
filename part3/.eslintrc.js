@@ -4,7 +4,7 @@ module.exports = {
         "commonjs": true,
         "node": true
     },
-    "extends": "airbnb",//"eslint:recommended",
+    "extends": "airbnb", //"eslint:recommended",
     "overrides": [
         {
             "env": {
