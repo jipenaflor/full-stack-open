@@ -9,8 +9,7 @@ const jwt = require('jsonwebtoken')
 usersRouter.get('/', async (req, res) => {
   const users = await User.findAll({
     include: {
-      model: Blog,
-      attributes: { exclude: ['userId'] }
+      model: Blog
     }
   })
   res.json(users)
@@ -51,6 +50,34 @@ usersRouter.put('/:username', tokenExtractor, async (req, res) => {
       error: 'invalid user'
     })
   }
+})
+
+usersRouter.get('/:id', async (req, res) => {
+  const where = {}
+
+  if (req.query.read) {
+    where.read = req.query.read === 'true'
+  }
+
+  const user = await User.findByPk(req.params.id, {
+    attributes: { exclude: ['id', 'passwordHash'] },
+    include: {
+      model: Blog,
+      as: 'readings',
+      attributes: {
+        exclude: ['userId'],
+        include: ['year']
+      },
+      through: {
+        as: 'readinglists',
+        attributes: [
+          'read', 'id'
+        ],
+        where
+      }
+    },
+  })
+  res.json(user)
 })
 
 module.exports = usersRouter
