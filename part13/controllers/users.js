@@ -42,9 +42,15 @@ usersRouter.put('/:username', tokenExtractor, async (req, res) => {
       username: req.params.username
     }
   })
-  user.username = req.body.username
-  await user.save()
-  res.json(user)
+  if (user.username === decodedToken.username) {
+    user.username = req.body.username
+    await user.save()
+    res.json(user)
+  } else {
+    return res.status(401).json({
+      error: 'invalid user'
+    })
+  }
 })
 
 module.exports = usersRouter
