@@ -1,7 +1,7 @@
 require('dotenv').config()
 const blogsRouter = require('express').Router()
 const { User, Blog } = require('../models')
-const { tokenExtractor } = require('../util/middleware')
+const { tokenExtractor, validateToken } = require('../util/middleware')
 const jwt = require('jsonwebtoken')
 const { Op } = require('sequelize')
 
@@ -37,16 +37,10 @@ blogsRouter.get('/', async (req, res) => {
   res.json(blogs)
 })
   
-blogsRouter.post('/', tokenExtractor, async (req, res) => {
+blogsRouter.post('/', tokenExtractor, validateToken, async (req, res) => {
   try {
-    const decodedToken = jwt.verify(req.token, process.env.SECRET)
-    if (!decodedToken) {
-      return res.status(401).json({
-        error: 'invalid token'
-      })
-    }
-
-    const user = await User.findByPk(decodedToken.id)
+    console.log(req.decodedToken)
+    const user = await User.findByPk(req.decodedToken.id)
     const blog = await Blog.create({ ...req.body, userId: user.id, date: new Date() })
     return res.json(blog)
   } catch (error) {
@@ -63,15 +57,9 @@ blogsRouter.get('/:id', async (req, res) => {
   }
 })
   
-blogsRouter.delete('/:id', tokenExtractor, async (req, res) => {
-  const decodedToken = jwt.verify(req.token, process.env.SECRET)
-  if (!decodedToken) {
-    return res.status(401).json({
-      error: 'invalid token'
-    })
-  }
+blogsRouter.delete('/:id', tokenExtractor, validateToken, async (req, res) => {
   const blog = await Blog.findByPk(req.params.id)
-  if (blog.userId === decodedToken.id) {
+  if (blog.userId === req.decodedToken.id) {
     await Blog.destroy({
       where: {
         id: blog.id
@@ -86,10 +74,10 @@ blogsRouter.delete('/:id', tokenExtractor, async (req, res) => {
 })
 
 blogsRouter.put('/:id', async (req, res) => {
-    const blog = await Blog.findByPk(req.params.id)
-    blog.likes = req.body.likes
-    await blog.save()
-    res.json(blog)
+  const blog = await Blog.findByPk(req.params.id)
+  blog.likes = req.body.likes
+  await blog.save()
+  res.json(blog)
 })
 
 module.exports = blogsRouter
